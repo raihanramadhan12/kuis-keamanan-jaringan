@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kuis Keamanan Jaringan dengan Login</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(135deg, #4a90e2, #145f99);
+    margin: 0;
+    padding: 0;
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #container {
+    background: #1c2d4a;
+    width: 90vw;
+    max-width: 480px;
+    padding: 2rem 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    box-sizing: border-box;
+  }
+  h1 {
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    margin-bottom: 1.2rem;
+    text-align: center;
+  }
+  /* Login form */
+  #login-form {
+    display: flex;
+    flex-direction: column;
+  }
+  label {
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+  }
+  input[type="text"],
+  input[type="password"] {
+    padding: 12px 15px;
+    margin-bottom: 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+  }
+  #login-btn {
+    background: #68a0f0;
+    border: none;
+    padding: 14px;
+    font-weight: 700;
+    color: #fff;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #login-btn:hover:not(:disabled) {
+    background: #5a8cd9;
+  }
+  #login-error {
+    color: #ff6b6b;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  /* Quiz styles */
+  #quiz-container {
+    display: none;
+    flex-direction: column;
+  }
+  .question {
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .options {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+  }
+  .options li {
+    background: #2a3e66;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  .options li:hover {
+    background: #3a558c;
+  }
+  .options li.selected {
+    background: #68a0f0;
+  }
+  #submit-btn {
+    background: #68a0f0;
+    border: none;
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #submit-btn:hover:not(:disabled) {
+    background: #5a8cd9;
+  }
+  #submit-btn:disabled {
+    background: #3a558c;
+    cursor: not-allowed;
+  }
+  #result-container {
+    margin-top: 1.2rem;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  @media(max-width: 400px) {
+    #container {
+      padding: 1rem 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <div id="login-section">
+    <h1>Login Kuis Keamanan Jaringan</h1>
+    <div id="login-error">Username dan Password tidak boleh kosong!</div>
+    <form id="login-form" onsubmit="return false;">
+      <label for="username">Username</label>
+      <input type="text" id="username" autocomplete="username" placeholder="Masukkan username" />
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" placeholder="Masukkan password" />
+      <button type="submit" id="login-btn">Masuk</button>
+    </form>
+  </div>
+  <div id="quiz-container">
+    <h1>Kuis Keamanan Jaringan</h1>
+    <div id="quiz"></div>
+    <button id="submit-btn" disabled>Jawab</button>
+    <div id="result-container"></div>
+  </div>
+</div>
+
+<script>
+  const loginForm = document.getElementById("login-form");
+  const usernameInput = document.getElementById("username");
+  const passwordInput = document.getElementById("password");
+  const loginError = document.getElementById("login-error");
+  const loginSection = document.getElementById("login-section");
+  const quizContainer = document.getElementById("quiz-container");
+  const quizDiv = document.getElementById("quiz");
+  const submitBtn = document.getElementById("submit-btn");
+  const resultContainer = document.getElementById("result-container");
+
+  let selectedAnswers = [];
+
+  loginForm.addEventListener("submit", () => {
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+    if(username === "" || password === "") {
+      loginError.style.display = "block";
+      return;
+    }
+    loginError.style.display = "none";
+    // For demo, accept any username/password
+    loginSection.style.display = "none";
+    quizContainer.style.display = "flex";
+    loadQuiz();
+  });
+
+  const quizData = [
+    {question:"Apa itu firewall dalam konteks keamanan jaringan?", options:["Alat untuk mempercepat koneksi internet","Sistem yang memonitor dan mengontrol lalu lintas jaringan","Jenis perangkat keras untuk penyimpanan data","Software untuk membuat jaringan Wi-Fi"], answer:1},
+    {question:"Apa kegunaan dari VPN (Virtual Private Network)?", options:["Untuk meningkatkan kecepatan jaringan lokal","Menyembunyikan alamat IP dan mengenkripsi koneksi internet","Membuka akses ke semua situs yang diblokir pemerintah tanpa batas","Menghubungkan ke perangkat Bluetooth"], answer:1},
+    {question:"Protokol manakah yang digunakan untuk mengamankan komunikasi web dengan HTTPS?", options:["FTP","SSL/TLS","SMTP","UDP"], answer:1},
+    {question:"Serangan manakah yang mencoba untuk mendapatkan akses tidak sah dengan menyamar sebagai pengguna lain?", options:["Phishing","Spoofing","DoS (Denial of Service)","Ransomware"], answer:1},
+    {question:"Apa yang dimaksud dengan 'phishing' dalam konteks keamanan siber?", options:["Serangan yang membuat sistem menjadi lambat","Upaya menipu pengguna untuk mendapatkan informasi sensitif","Software yang merusak perangkat keras","Penggunaan password yang sangat kuat"], answer:1},
+    {question:"Apa kepanjangan dari DDoS?", options:["Distributed Denial of Service","Direct Data on Server","Distributed Data over Server","Direct Denial of Security"], answer:0},
+    {question:"Apa fungsi dari protokol WPA2 pada jaringan Wi-Fi?", options:["Meningkatkan kecepatan transfer data","Mengamankan jaringan dengan enkripsi yang kuat","Menghubungkan perangkat secara otomatis","Mengelola alamat IP"], answer:1},
+    {question:"Apa itu serangan malware?", options:["Serangan yang merusak hardware secara fisik","Serangan menggunakan perangkat lunak jahat untuk merusak sistem","Serangan menambahkan perangkat keras baru","Serangan meningkatkan performa sistem"], answer:1},
+    {question:"Jenis serangan apa yang melibatkan pengiriman banyak permintaan untuk membuat layanan tidak tersedia?", options:["Phishing","DoS (Denial of Service)","Spoofing","Man-in-the-Middle"], answer:1},
+    {question:"Apa itu autentikasi dua faktor (2FA)?", options:["Menggunakan dua password yang sama","Menggunakan dua metode verifikasi untuk mengakses akun","Membuka dua aplikasi sekaligus","Mengganti password dua kali dalam sehari"], answer:1},
+    {question:"Apa fungsi dari antivirus dalam keamanan jaringan?", options:["Mempercepat koneksi internet","Mendeteksi dan menghapus program jahat","Meningkatkan sinyal Wi-Fi","Menyimpan data secara otomatis"], answer:1},
+    {question:"Apa tujuan utama dari enkripsi data?", options:["Membuat data lebih kecil","Mengubah data agar hanya bisa dibaca oleh yang berhak","Membagi data ke banyak komputer","Membuka akses publik ke data"], answer:1},
+    {question:"Apa itu serangan Man-in-the-Middle?", options:["Serangan mencuri data dengan menyusup di antara dua komunikasi","Serangan yang merusak hardware komputer","Serangan membuka banyak koneksi palsu","Serangan yang mengirim iklan berlebihan"], answer:0},
+    {question:"Apa arti dari kata 'patch' dalam konteks keamanan sistem?", options:["Tambalan keamanan untuk memperbaiki kerentanan","Jenis virus komputer","Software baru untuk mempercepat koneksi","Alat untuk menghapus data"], answer:0},
+    {question:"Apa yang dimaksud dengan 'backdoor' dalam keamanan komputer?", options:["Pintu rahasia untuk mengakses sistem secara tidak sah","Antivirus terbaru","Pengaturan jaringan","Perangkat keras firewall"], answer:0},
+    {question:"Apa kepanjangan dari SSL?", options:["Secure Socket Layer","Safe System Login","Secure Server Link","System Secure Layer"], answer:0},
+    {question:"Apa itu serangan ransomware?", options:["Program yang memblokir akses data dan meminta tebusan","Serangan mempercepat koneksi internet","Metode backup data","Program antivirus terbaru"], answer:0},
+    {question:"Bagaimana cara kerja sistem IDS (Intrusion Detection System)?", options:["Memblokir semua koneksi internet","Mendeteksi aktivitas mencurigakan di jaringan","Mempercepat transfer data","Menghapus virus secara otomatis"], answer:1},
+    {question:"Apa fungsi dari NAT (Network Address Translation)?", options:["Mengubah alamat IP privat menjadi publik dan sebaliknya","Menghapus virus dari komputer","Mengatur kecepatan jaringan","Membuat password otomatis"], answer:0},
+    {question:"Apa tujuan utama dari penggunaan proxy dalam jaringan?", options:["Menyimpan data secara permanen","Menyembunyikan alamat IP asli saat browsing","Mempercepat perangkat keras","Menghapus malware secara otomatis"], answer:1},
+    {question:"Apa itu honeypot dalam keamanan jaringan?", options:["Jebakan untuk menarik attacker agar bisa dianalisis","Jenis firewall terbaru","Protokol keamanan Wi-Fi","Software antivirus"], answer:0},
+    {question:"Apa kepanjangan dari SSH?", options:["Secure Shell","Safe Shell","Secure Share","System Shell"], answer:0},
+    {question:"Apa fungsi dari cookie dalam konteks keamanan web?", options:["Menjaga sesi pengguna dengan informasi terenkripsi","Menghilangkan virus dari browser","Mempercepat loading halaman","Menyimpan password"], answer:0},
+    {question:"Apa itu brute force attack?", options:["Mencoba semua kemungkinan password sampai berhasil","Menyusup ke jaringan tanpa izin","Mengirim virus lewat email","Menyadap komunikasi"], answer:0},
+    {question:"Apa peran dari TLS dalam komunikasi jaringan?", options:["Mengamankan data dengan enkripsi","Mempercepat pengiriman data","Menghubungkan perangkat Bluetooth","Mendownload file"], answer:0},
+    {question:"Apa arti dari istilah 'zero-day vulnerability'?", options:["Kerentanan yang belum diketahui dan belum ada patchnya","Serangan terhadap hari pertama server","Update sistem yang terjadi pada nol hari","Pemblokiran akses ke server"], answer:0},
+    {question:"Apa itu social engineering dalam konteks keamanan?", options:["Manipulasi psikologi untuk mencuri informasi","Serangan fisik ke perangkat keras","Pemrograman software berbahaya","Proses backup data"], answer:0},
+    {question:"Apa fungsi dari autentikasi biometrik?", options:["Menggunakan ciri fisik seperti sidik jari untuk identifikasi","Mengubah password secara otomatis","Mengirim kode lewat SMS","Membuka firewall"], answer:0},
+    {question:"Apa itu patch management?", options:["Proses mengelola dan mengaplikasikan pembaruan perangkat lunak","Software backup data","Antivirus terbaru","Firewall jaringan"], answer:0},
+    {question:"Apa itu DNS spoofing?", options:["Mengalihkan alamat website ke situs palsu","Mempercepat koneksi internet","Menghapus virus di DNS","Membatasi akses jaringan"], answer:0},
+    {question:"Apa itu brute force protection?", options:["Mencegah percobaan login berulang menggunakan password yang salah","Mempercepat proses login","Menyimpan password","Menghapus cookie browser"], answer:0}
+  ];
+
+  function loadQuiz() {
+    quizDiv.innerHTML = '';
+    selectedAnswers = new Array(quizData.length).fill(null);
+    quizData.forEach((item, idx) => {
+      const questionDiv = document.createElement('div');
+      questionDiv.classList.add('question-item');
+
+      const questionEl = document.createElement('p');
+      questionEl.classList.add('question');
+      questionEl.innerText = `${idx + 1}. ${item.question}`;
+      questionDiv.appendChild(questionEl);
+
+      const optionsList = document.createElement('ul');
+      optionsList.classList.add('options');
+
+      item.options.forEach((option, i) => {
+        const optionLi = document.createElement('li');
+        optionLi.innerText = option;
+        optionLi.tabIndex = 0;
+        optionLi.addEventListener('click', () => {
+          selectOption(idx, i);
+        });
+        optionLi.addEventListener('keypress', (e) => {
+          if(e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            selectOption(idx, i);
+          }
+        });
+        optionsList.appendChild(optionLi);
+      });
+
+      questionDiv.appendChild(optionsList);
+      quizDiv.appendChild(questionDiv);
+    });
+    submitBtn.disabled = true;
+    resultContainer.innerHTML = '';
+  }
+
+  function selectOption(questionIndex, optionIndex) {
+    selectedAnswers[questionIndex] = optionIndex;
+    updateUI(questionIndex);
+    submitBtn.disabled = selectedAnswers.includes(null);
+  }
+
+  function updateUI(questionIndex) {
+    const questionDiv = quizDiv.children[questionIndex];
+    const optionLis = questionDiv.querySelectorAll('li');
+    optionLis.forEach((li, i) => {
+      if(i === selectedAnswers[questionIndex]) {
+        li.classList.add('selected');
+      } else {
+        li.classList.remove('selected');
+      }
+    });
+  }
+
+  submitBtn.addEventListener('click', () => {
+    let score = 0;
+    quizData.forEach((q, i) => {
+      if(selectedAnswers[i] === q.answer) score++;
+    });
+    resultContainer.innerHTML = `Skor Anda: <strong>${score}</strong> dari <strong>${quizData.length}</strong>.`;
+    submitBtn.disabled = true;
+    // disable further selection
+    const allOptions = quizDiv.querySelectorAll('li');
+    allOptions.forEach(li => {
+      li.style.pointerEvents = 'none';
+      li.tabIndex = -1;
+    });
+  });
+</script>
+</body>
+</html>
+
